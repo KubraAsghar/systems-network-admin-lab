@@ -1,0 +1,30 @@
+﻿name: CI Docker Build and Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Validate Project Structure
+        run: |
+          test -f app/index.html
+          test -f docker/Dockerfile
+          echo "All required files verified!"
+
+      - name: Build Docker Image
+        run: docker build -f docker/Dockerfile -t lab7-web-app:latest .
+
+      - name: Test Container Startup
+        run: |
+          docker run -d --name test-web -p 8080:80 lab7-web-app:latest
+          sleep 2
+          curl -f http://localhost:8080
+          docker stop test-web
